@@ -16,7 +16,11 @@ import {
   Switch,
   FormControlLabel,
   IconButton,
-  useMediaQuery
+  useMediaQuery,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import {
   People,
@@ -31,7 +35,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 // Components
 import FarmerManagement from './components/FarmerManagement';
 import MilkCollection from './components/MilkCollection';
@@ -41,105 +44,186 @@ import Reports from './components/Reports';
 import DashboardComponent from './components/Dashboard';
 import BillGeneration from './components/BillGeneration';
 
-// Add to menuItems array
-
-
-// Create custom theme with royal yellow
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#FFD700', // Royal Yellow
-      contrastText: '#000000',
+// Define multiple themes
+const themes = {
+  golden_black: createTheme({
+    palette: {
+      primary: { main: '#FFD700', contrastText: '#000000' },
+      secondary: { main: '#FFA500', contrastText: '#000000' },
+      background: { default: '#FFFFFF', paper: '#F5F5F5' },
+      text: { primary: '#000000', secondary: '#333333' },
     },
-    secondary: {
-      main: '#FFA500', // Orange accent
-      contrastText: '#000000',
+    typography: {
+      fontFamily: 'Roboto, Arial, sans-serif',
+      h4: { fontWeight: 600, color: '#000000' },
+      h5: { fontWeight: 500, color: '#000000' },
+      h6: { fontWeight: 500, color: '#000000' },
     },
-    background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#000000',
-      secondary: '#333333',
-    },
-  },
-  typography: {
-    fontFamily: 'Roboto, Arial, sans-serif',
-    h4: {
-      fontWeight: 600,
-      color: '#000000',
-    },
-    h5: {
-      fontWeight: 500,
-      color: '#000000',
-    },
-    h6: {
-      fontWeight: 500,
-      color: '#000000',
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#FFD700',
-          color: '#000000',
-          fontWeight: 600,
-          '&:hover': {
-            backgroundColor: '#E6C200',
-          },
-          '&:focus': {
-            boxShadow: '0 0 0 3px rgba(255, 215, 0, 0.3)',
-          },
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          border: '2px solid #FFD700',
-          borderRadius: '12px',
-          boxShadow: '0 4px 8px rgba(255, 215, 0, 0.2)',
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#FFD700',
-            },
-          },
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#FFD700',
-          },
-        },
-      },
-    },
-    MuiListItem: {
-      styleOverrides: {
-        root: {
-          '&.Mui-selected': {
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
             backgroundColor: '#FFD700',
             color: '#000000',
-            '& .MuiListItemIcon-root': {
-              color: '#000000',
-            },
-            '& .MuiListItemText-primary': {
-              color: '#000000',
-              fontWeight: 600,
-            },
+            fontWeight: 600,
+            '&:hover': { backgroundColor: '#E6C200' },
+            '&:focus': { boxShadow: '0 0 0 3px rgba(255, 215, 0, 0.3)' },
           },
-          '&:hover': {
-            backgroundColor: '#FFF8DC',
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            border: '2px solid #FFD700',
+            borderRadius: '12px',
+            boxShadow: '0 4px 8px rgba(255, 215, 0, 0.2)',
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+            },
+            '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+          },
+        },
+      },
+      MuiListItem: {
+        styleOverrides: {
+          root: {
+            '&.Mui-selected': {
+              backgroundColor: '#FFD700',
+              color: '#000000',
+              '& .MuiListItemIcon-root': { color: '#000000' },
+              '& .MuiListItemText-primary': { color: '#000000', fontWeight: 600 },
+            },
+            '&:hover': { backgroundColor: '#FFF8DC' },
           },
         },
       },
     },
-  },
-});
+  }),
+  lightgreen_white: createTheme({
+    palette: {
+      primary: { main: '#8BC34A', contrastText: '#000000' },
+      secondary: { main: '#4CAF50', contrastText: '#000000' },
+      background: { default: '#FFFFFF', paper: '#F5F5F5' },
+      text: { primary: '#000000', secondary: '#333333' },
+    },
+    typography: {
+      fontFamily: 'Roboto, Arial, sans-serif',
+      h4: { fontWeight: 600, color: '#000000' },
+      h5: { fontWeight: 500, color: '#000000' },
+      h6: { fontWeight: 500, color: '#000000' },
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#8BC34A',
+            color: '#000000',
+            fontWeight: 600,
+            '&:hover': { backgroundColor: '#7CB342' },
+            '&:focus': { boxShadow: '0 0 0 3px rgba(139, 195, 74, 0.3)' },
+          },
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            border: '2px solid #8BC34A',
+            borderRadius: '12px',
+            boxShadow: '0 4px 8px rgba(139, 195, 74, 0.2)',
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': { borderColor: '#8BC34A' },
+            },
+            '& .MuiInputLabel-root.Mui-focused': { color: '#8BC34A' },
+          },
+        },
+      },
+      MuiListItem: {
+        styleOverrides: {
+          root: {
+            '&.Mui-selected': {
+              backgroundColor: '#8BC34A',
+              color: '#000000',
+              '& .MuiListItemIcon-root': { color: '#000000' },
+              '& .MuiListItemText-primary': { color: '#000000', fontWeight: 600 },
+            },
+            '&:hover': { backgroundColor: '#F5F5F5' },
+          },
+        },
+      },
+    },
+  }),
+  simple: createTheme({
+    palette: {
+      primary: { main: '#2196F3', contrastText: '#FFFFFF' },
+      secondary: { main: '#FF5722', contrastText: '#FFFFFF' },
+      background: { default: '#F5F5F5', paper: '#FFFFFF' },
+      text: { primary: '#000000', secondary: '#333333' },
+    },
+    typography: {
+      fontFamily: 'Roboto, Arial, sans-serif',
+      h4: { fontWeight: 600, color: '#000000' },
+      h5: { fontWeight: 500, color: '#000000' },
+      h6: { fontWeight: 500, color: '#000000' },
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#2196F3',
+            color: '#FFFFFF',
+            fontWeight: 600,
+            '&:hover': { backgroundColor: '#1976D2' },
+            '&:focus': { boxShadow: '0 0 0 3px rgba(33, 150, 243, 0.3)' },
+          },
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            border: '2px solid #2196F3',
+            borderRadius: '12px',
+            boxShadow: '0 4px 8px rgba(33, 150, 243, 0.2)',
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': { borderColor: '#2196F3' },
+            },
+            '& .MuiInputLabel-root.Mui-focused': { color: '#2196F3' },
+          },
+        },
+      },
+      MuiListItem: {
+        styleOverrides: {
+          root: {
+            '&.Mui-selected': {
+              backgroundColor: '#2196F3',
+              color: '#FFFFFF',
+              '& .MuiListItemIcon-root': { color: '#FFFFFF' },
+              '& .MuiListItemText-primary': { color: '#FFFFFF', fontWeight: 600 },
+            },
+            '&:hover': { backgroundColor: '#E3F2FD' },
+          },
+        },
+      },
+    },
+  }),
+};
 
 const drawerWidth = 280;
 
@@ -147,7 +231,8 @@ function App() {
   const { t, i18n } = useTranslation();
   const [selectedTab, setSelectedTab] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(themes.golden_black.breakpoints.down('md'));
+  const [currentTheme, setCurrentTheme] = useState('golden_black');
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
@@ -155,6 +240,10 @@ function App() {
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleThemeChange = (event) => {
+    setCurrentTheme(event.target.value);
   };
 
   const menuItems = [
@@ -165,9 +254,6 @@ function App() {
     { id: 'advances', label: t('advances'), icon: <AccountBalance /> },
     { id: 'reports', label: t('reports'), icon: <Assessment /> },
     { id: 'bills', label: t('bills'), icon: <Receipt /> },
-
-// Add to renderContent switch
-
   ];
 
   const renderContent = () => {
@@ -184,10 +270,10 @@ function App() {
         return <Advances />;
       case 'reports':
         return <Reports />;
+      case 'bills':
+        return <BillGeneration />;
       default:
         return <DashboardComponent />;
-        case 'bills':
-  return <BillGeneration />;
     }
   };
 
@@ -195,8 +281,8 @@ function App() {
     <div>
       <Toolbar
         sx={{
-          backgroundColor: '#FFD700',
-          color: '#000000',
+          backgroundColor: themes[currentTheme].palette.primary.main,
+          color: themes[currentTheme].palette.primary.contrastText,
           minHeight: '64px !important',
         }}
       >
@@ -224,7 +310,7 @@ function App() {
             <ListItemIcon sx={{ minWidth: '40px' }}>
               {item.icon}
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary={item.label}
               sx={{
                 '& .MuiListItemText-primary': {
@@ -240,7 +326,7 @@ function App() {
   );
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={themes[currentTheme]}>
       <CssBaseline />
       <Box sx={{ display: 'flex' }}>
         <AppBar
@@ -248,9 +334,9 @@ function App() {
           sx={{
             width: { md: `calc(100% - ${drawerWidth}px)` },
             ml: { md: `${drawerWidth}px` },
-            backgroundColor: '#FFD700',
-            color: '#000000',
-            boxShadow: '0 2px 4px rgba(255, 215, 0, 0.3)',
+            backgroundColor: themes[currentTheme].palette.primary.main,
+            color: themes[currentTheme].palette.primary.contrastText,
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
           }}
         >
           <Toolbar>
@@ -271,6 +357,24 @@ function App() {
             >
               {menuItems.find(item => item.id === selectedTab)?.label || t('dashboard')}
             </Typography>
+            <FormControl sx={{ minWidth: 120, mr: 2 }}>
+              <InputLabel sx={{ color: themes[currentTheme].palette.primary.contrastText }}>Theme</InputLabel>
+              <Select
+                value={currentTheme}
+                onChange={handleThemeChange}
+                label="Theme"
+                sx={{
+                  color: themes[currentTheme].palette.primary.contrastText,
+                  '.MuiOutlinedInput-notchedOutline': { borderColor: themes[currentTheme].palette.primary.contrastText },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: themes[currentTheme].palette.primary.contrastText },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: themes[currentTheme].palette.primary.contrastText },
+                }}
+              >
+                <MenuItem value="golden_black">Golden + Black</MenuItem>
+                <MenuItem value="lightgreen_white">Light Green + White</MenuItem>
+                <MenuItem value="simple">Simple</MenuItem>
+              </Select>
+            </FormControl>
             <FormControlLabel
               control={
                 <Switch
@@ -292,32 +396,30 @@ function App() {
               sx={{
                 margin: 0,
                 '& .MuiFormControlLabel-label': {
-                  color: '#000000',
+                  color: themes[currentTheme].palette.primary.contrastText,
                 },
               }}
             />
           </Toolbar>
         </AppBar>
-
         <Box
           component="nav"
           sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
           aria-label="navigation menu"
         >
           <Drawer
-            container={undefined}
             variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
             ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
+              keepMounted: true,
             }}
             sx={{
               display: { xs: 'block', md: 'none' },
               '& .MuiDrawer-paper': {
                 boxSizing: 'border-box',
                 width: drawerWidth,
-                borderRight: '2px solid #FFD700',
+                borderRight: `2px solid ${themes[currentTheme].palette.primary.main}`,
               },
             }}
           >
@@ -330,7 +432,7 @@ function App() {
               '& .MuiDrawer-paper': {
                 boxSizing: 'border-box',
                 width: drawerWidth,
-                borderRight: '2px solid #FFD700',
+                borderRight: `2px solid ${themes[currentTheme].palette.primary.main}`,
               },
             }}
             open
@@ -338,13 +440,12 @@ function App() {
             {drawer}
           </Drawer>
         </Box>
-
         <Box
           component="main"
           sx={{
             flexGrow: 1,
             width: { md: `calc(100% - ${drawerWidth}px)` },
-            backgroundColor: '#f5f5f5',
+            backgroundColor: themes[currentTheme].palette.background.default,
             minHeight: '100vh',
           }}
         >
@@ -362,7 +463,6 @@ function App() {
           </Container>
         </Box>
       </Box>
-
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -375,9 +475,9 @@ function App() {
         pauseOnHover
         theme="light"
         toastStyle={{
-          backgroundColor: '#FFF8DC',
-          color: '#000000',
-          border: '1px solid #FFD700',
+          backgroundColor: themes[currentTheme].palette.background.paper,
+          color: themes[currentTheme].palette.text.primary,
+          border: `1px solid ${themes[currentTheme].palette.primary.main}`,
         }}
       />
     </ThemeProvider>

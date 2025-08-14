@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Grid,
   Card,
@@ -6,6 +6,7 @@ import {
   Typography,
   Box,
   CircularProgress,
+  useTheme,
 } from '@mui/material';
 import {
   People,
@@ -19,6 +20,7 @@ import moment from 'moment';
 
 function Dashboard() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
     totalFarmers: 0,
@@ -31,74 +33,88 @@ function Dashboard() {
     monthlyRevenue: 0,
   });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
       const today = moment().format('YYYY-MM-DD');
-      
-      // Fetch farmers count
+      const startWeek = moment().startOf('week').format('YYYY-MM-DD');
+      const endWeek = moment().endOf('week').format('YYYY-MM-DD');
+      const startMonth = moment().startOf('month').format('YYYY-MM-DD');
+      const endMonth = moment().endOf('month').format('YYYY-MM-DD');
+
       const farmersResponse = await axios.get('/farmers/read');
       const totalFarmers = farmersResponse.data.length;
 
-      // Fetch today's collections
-      const todayCollectionsResponse = await axios.get(`/collections/read?date=${today}`);
-      const todayCollections = todayCollectionsResponse.data;
-      
-      const todayStats = todayCollections.reduce((acc, collection) => {
+      const allCollectionsResponse = await axios.get('/collections/read');
+      const allCollections = allCollectionsResponse.data;
+
+      const todayCollectionsData = allCollections.filter(c => c.date === today);
+      const todayStats = todayCollectionsData.reduce((acc, collection) => {
         acc.collections += 1;
         acc.milk += collection.total_liters;
         acc.revenue += collection.final_amount;
         return acc;
       }, { collections: 0, milk: 0, revenue: 0 });
 
-      // Fetch daily report for today
-      const dailyReportResponse = await axios.get(`/reports/daily?date=${today}`);
-      const dailyReport = dailyReportResponse.data;
+      const weeklyCollections = allCollections.filter(c => moment(c.date).isBetween(startWeek, endWeek, null, '[]'));
+      const weeklyStats = weeklyCollections.reduce((acc, collection) => {
+        acc.milk += collection.total_liters;
+        acc.revenue += collection.final_amount;
+        return acc;
+      }, { milk: 0, revenue: 0 });
+
+      const monthlyCollections = allCollections.filter(c => moment(c.date).isBetween(startMonth, endMonth, null, '[]'));
+      const monthlyStats = monthlyCollections.reduce((acc, collection) => {
+        acc.milk += collection.total_liters;
+        acc.revenue += collection.final_amount;
+        return acc;
+      }, { milk: 0, revenue: 0 });
 
       setDashboardData({
         totalFarmers,
         todayCollections: todayStats.collections,
         todayMilk: todayStats.milk,
         todayRevenue: todayStats.revenue,
-        weeklyMilk: dailyReport.daily_stats?.total_milk || 0,
-        weeklyRevenue: dailyReport.daily_stats?.final_amount || 0,
-        monthlyMilk: dailyReport.daily_stats?.total_milk || 0,
-        monthlyRevenue: dailyReport.daily_stats?.final_amount || 0,
+        weeklyMilk: weeklyStats.milk,
+        weeklyRevenue: weeklyStats.revenue,
+        monthlyMilk: monthlyStats.milk,
+        monthlyRevenue: monthlyStats.revenue,
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const StatCard = ({ title, value, icon, color, subtitle }) => (
-    <Card 
-      sx={{ 
+    <Card
+      sx={{
         height: '100%',
-        background: 'linear-gradient(135deg, #FFD700 0%, #FFF8DC 100%)',
-        border: '2px solid #FFD700',
+        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.background.paper} 100%)`,
+        border: `2px solid ${theme.palette.primary.main}`,
         transition: 'transform 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: '0 8px 16px rgba(255, 215, 0, 0.3)',
-        }
+          boxShadow: `0 8px 16px ${theme.palette.primary.main}33`,
+        },
       }}
     >
-      <CardContent>
+      <CardContent sx={{ padding: { xs: '12px', sm: '16px' } }}>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box>
             <Typography
               variant="h6"
               component="div"
-              sx={{ 
-                color: '#000000',
+              sx={{
+                color: 'text.primary',
                 fontWeight: 600,
-                marginBottom: 1
+                marginBottom: 1,
+                fontSize: { xs: '1rem', sm: '1.25rem' },
               }}
             >
               {title}
@@ -106,10 +122,11 @@ function Dashboard() {
             <Typography
               variant="h4"
               component="div"
-              sx={{ 
-                color: '#000000',
+              sx={{
+                color: 'text.primary',
                 fontWeight: 700,
-                marginBottom: 0.5
+                marginBottom: 0.5,
+                fontSize: { xs: '1.5rem', sm: '2rem' },
               }}
             >
               {value}
@@ -117,9 +134,10 @@ function Dashboard() {
             {subtitle && (
               <Typography
                 variant="body2"
-                sx={{ 
-                  color: '#333333',
-                  fontWeight: 500
+                sx={{
+                  color: 'text.secondary',
+                  fontWeight: 500,
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 }}
               >
                 {subtitle}
@@ -128,14 +146,14 @@ function Dashboard() {
           </Box>
           <Box
             sx={{
-              backgroundColor: color || '#FFA500',
+              backgroundColor: color || theme.palette.secondary.main,
               borderRadius: '50%',
-              width: 60,
-              height: 60,
+              width: { xs: 40, sm: 60 },
+              height: { xs: 40, sm: 60 },
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#000000'
+              color: theme.palette.getContrastText(color || theme.palette.secondary.main),
             }}
           >
             {icon}
@@ -148,7 +166,7 @@ function Dashboard() {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress size={60} sx={{ color: '#FFD700' }} />
+        <CircularProgress size={60} sx={{ color: 'primary.main' }} />
       </Box>
     );
   }
@@ -159,139 +177,70 @@ function Dashboard() {
         variant="h4"
         gutterBottom
         sx={{
-          color: '#000000',
+          color: 'text.primary',
           fontWeight: 600,
           marginBottom: 3,
-          textAlign: 'center'
+          textAlign: 'center',
+          fontSize: { xs: '1.5rem', sm: '2rem' },
         }}
       >
         {t('welcomeToDashboard')}
       </Typography>
-
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         {/* Today's Summary */}
         <Grid item xs={12}>
-          <Typography
-            variant="h5"
-            gutterBottom
-            sx={{
-              color: '#000000',
-              fontWeight: 600,
-              marginBottom: 2,
-              paddingLeft: 1
-            }}
-          >
+          <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, marginBottom: 2, paddingLeft: 1, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
             {t('todaysSummary')}
           </Typography>
         </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title={t('totalFarmers')}
-            value={dashboardData.totalFarmers}
-            icon={<People fontSize="large" />}
-            color="#4CAF50"
-          />
+          <StatCard title={t('totalFarmers')} value={dashboardData.totalFarmers} icon={<People fontSize="large" />} color="#4CAF50" />
         </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title={t('totalCollections')}
-            value={dashboardData.todayCollections}
-            icon={<Opacity fontSize="large" />}
-            color="#2196F3"
-          />
+          <StatCard title={t('totalCollections')} value={dashboardData.todayCollections} icon={<Opacity fontSize="large" />} color="#2196F3" />
         </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title={t('totalMilk')}
-            value={`${dashboardData.todayMilk.toFixed(1)}${t('liters')}`}
-            icon={<Opacity fontSize="large" />}
-            color="#FF9800"
-          />
+          <StatCard title={t('totalMilk')} value={`${dashboardData.todayMilk.toFixed(1)}${t('liters')}`} icon={<Opacity fontSize="large" />} color="#FF9800" />
         </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title={t('totalRevenue')}
-            value={`₹${dashboardData.todayRevenue.toFixed(2)}`}
-            icon={<TrendingUp fontSize="large" />}
-            color="#9C27B0"
-          />
+          <StatCard title={t('totalRevenue')} value={`₹${dashboardData.todayRevenue.toFixed(2)}`} icon={<TrendingUp fontSize="large" />} color="#9C27B0" />
         </Grid>
-
-        {/* Quick Stats */}
+        
+        {/* Weekly Summary */}
         <Grid item xs={12}>
-          <Typography
-            variant="h5"
-            gutterBottom
-            sx={{
-              color: '#000000',
-              fontWeight: 600,
-              marginTop: 3,
-              marginBottom: 2,
-              paddingLeft: 1
-            }}
-          >
+          <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, marginTop: 3, marginBottom: 2, paddingLeft: 1, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+            {t('thisWeekSummary')}
+          </Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <StatCard title={t('totalMilk')} value={`${dashboardData.weeklyMilk.toFixed(1)}`} subtitle={t('liters')} icon={<Opacity fontSize="large" />} color="#00BCD4" />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <StatCard title={t('totalRevenue')} value={`₹${dashboardData.weeklyRevenue.toFixed(2)}`} icon={<AccountBalance fontSize="large" />} color="#795548" />
+        </Grid>
+        
+        {/* Monthly Summary */}
+        <Grid item xs={12}>
+          <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', fontWeight: 600, marginTop: 3, marginBottom: 2, paddingLeft: 1, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
             {t('thisMonthSummary')}
           </Typography>
         </Grid>
-
         <Grid item xs={12} sm={6}>
-          <StatCard
-            title={t('totalMilk')}
-            value={`${dashboardData.monthlyMilk.toFixed(1)}`}
-            subtitle={t('liters')}
-            icon={<Opacity fontSize="large" />}
-            color="#00BCD4"
-          />
+          <StatCard title={t('totalMilk')} value={`${dashboardData.monthlyMilk.toFixed(1)}`} subtitle={t('liters')} icon={<Opacity fontSize="large" />} color="#00BCD4" />
         </Grid>
-
         <Grid item xs={12} sm={6}>
-          <StatCard
-            title={t('totalRevenue')}
-            value={`₹${dashboardData.monthlyRevenue.toFixed(2)}`}
-            icon={<AccountBalance fontSize="large" />}
-            color="#795548"
-          />
+          <StatCard title={t('totalRevenue')} value={`₹${dashboardData.monthlyRevenue.toFixed(2)}`} icon={<AccountBalance fontSize="large" />} color="#795548" />
         </Grid>
-
+        
         {/* Welcome Message */}
         <Grid item xs={12}>
-          <Card
-            sx={{
-              background: 'linear-gradient(135deg, #FFF8DC 0%, #FFD700 100%)',
-              border: '2px solid #FFD700',
-              marginTop: 3,
-              textAlign: 'center',
-              padding: 2
-            }}
-          >
+          <Card sx={{ background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main} 100%)`, border: `2px solid ${theme.palette.primary.main}`, marginTop: 3, textAlign: 'center', padding: { xs: 1, sm: 2 } }}>
             <CardContent>
-              <Typography
-                variant="h5"
-                component="div"
-                sx={{
-                  color: '#000000',
-                  fontWeight: 600,
-                  marginBottom: 2
-                }}
-              >
+              <Typography variant="h5" component="div" sx={{ color: 'text.primary', fontWeight: 600, marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                 {t('appTitle')}
               </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: '#333333',
-                  fontSize: '1.1rem',
-                  maxWidth: '800px',
-                  margin: '0 auto'
-                }}
-              >
-                Comprehensive milk collection management system designed for efficiency, 
-                accuracy, and ease of use. Track farmers, manage collections, monitor expenses, 
-                and generate detailed reports all in one place.
+              <Typography variant="body1" sx={{ color: 'text.secondary', fontSize: { xs: '0.9rem', sm: '1.1rem' }, maxWidth: '800px', margin: '0 auto' }}>
+                Comprehensive milk collection management system designed for efficiency, accuracy, and ease of use. Track farmers, manage collections, monitor expenses, and generate detailed reports all in one place.
               </Typography>
             </CardContent>
           </Card>

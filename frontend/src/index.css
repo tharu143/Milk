@@ -5,7 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background-color: #FFFFFF; /* Default white */
 }
 
 code {
@@ -13,59 +13,55 @@ code {
     monospace;
 }
 
-.royal-yellow {
+/* Theme-specific classes (can be used if needed) */
+.golden-black {
   background-color: #FFD700 !important;
   color: #000000 !important;
 }
 
-.royal-yellow-light {
-  background-color: #FFF8DC !important;
+.light-green-white {
+  background-color: #8BC34A !important;
 }
 
-.text-royal-yellow {
-  color: #FFD700 !important;
+.simple-theme {
+  background-color: #2196F3 !important;
+  color: #FFFFFF !important;
 }
 
-.border-royal-yellow {
-  border-color: #FFD700 !important;
+.text-primary {
+  color: var(--primary-color) !important;
 }
 
-.sidebar-active {
-  background-color: #FFD700 !important;
-  color: #000000 !important;
+.border-primary {
+  border-color: var(--primary-color) !important;
 }
 
-.hover-royal-yellow:hover {
-  background-color: #FFD700 !important;
-  color: #000000 !important;
-}
-
-/* Custom scrollbar for better UX */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #F5F5F5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FFD700;
+  background: var(--primary-color, #FFD700);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #E6C200;
+  background: var(--secondary-color, #FFA500);
 }
 
-/* Accessibility improvements */
+/* Accessibility */
 .MuiButton-root:focus,
 .MuiTextField-root:focus-within,
 .MuiSelect-root:focus-within {
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3) !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* High contrast for better readability */
+/* High contrast */
 .high-contrast {
   color: #000000 !important;
   background-color: #FFFFFF !important;
@@ -75,7 +71,7 @@ code {
   color: #000000 !important;
 }
 
-/* Animation for better UX */
+/* Animation */
 .fade-in {
   animation: fadeIn 0.3s ease-in;
 }
@@ -85,12 +81,12 @@ code {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive design improvements */
+/* Responsive */
 @media (max-width: 768px) {
   .mobile-responsive {
     padding: 8px !important;
   }
-  
+ 
   .hide-mobile {
     display: none !important;
   }
@@ -101,7 +97,7 @@ code {
   .no-print {
     display: none !important;
   }
-  
+ 
   .print-friendly {
     background: white !important;
     color: black !important;
